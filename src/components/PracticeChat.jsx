@@ -6,6 +6,19 @@ const SpeechRecognitionAPI =
 const speechInputSupported = !!SpeechRecognitionAPI
 const speechOutputSupported = true
 
+function TypingDots() {
+  return (
+    <div className="flex items-center gap-2 text-ink/40 text-sm">
+      <span>The teacher is thinking</span>
+      <span className="flex gap-1">
+        <span className="w-1.5 h-1.5 rounded-full bg-ink/40 animate-bounce [animation-delay:-0.3s]" />
+        <span className="w-1.5 h-1.5 rounded-full bg-ink/40 animate-bounce [animation-delay:-0.15s]" />
+        <span className="w-1.5 h-1.5 rounded-full bg-ink/40 animate-bounce" />
+      </span>
+    </div>
+  )
+}
+
 function PracticeChat({ need, onDone }) {
   const [messages, setMessages] = useState([])
   const [input, setInput] = useState('')
@@ -136,7 +149,7 @@ function PracticeChat({ need, onDone }) {
   }
 
   return (
-    <div className="max-w-xl mx-auto p-8 flex flex-col gap-6">
+    <div className="max-w-xl mx-auto px-6 py-10 sm:p-8 flex flex-col gap-6">
       <div className="flex items-start justify-between gap-4">
         <div>
           <h1 className="font-display text-3xl text-ink">Find your words</h1>
@@ -147,7 +160,8 @@ function PracticeChat({ need, onDone }) {
         <button
           type="button"
           onClick={toggleVoiceMode}
-          className={`shrink-0 px-4 py-2 rounded-lg text-sm font-medium border transition ${
+          className={`shrink-0 px-4 py-2 rounded-lg text-sm font-medium border transition active:scale-[0.98]
+            focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-harbor/40 ${
             voiceMode
               ? 'bg-harbor text-mist border-harbor'
               : 'bg-transparent text-harbor border-harbor/40 hover:border-harbor'
@@ -159,7 +173,10 @@ function PracticeChat({ need, onDone }) {
 
       <div className="flex flex-col gap-3 min-h-[200px]">
         {messages.map((m, i) => (
-          <div key={i} className={`flex flex-col ${m.role === 'student' ? 'items-end' : 'items-start'}`}>
+          <div
+            key={i}
+            className={`flex flex-col animate-fadeIn ${m.role === 'student' ? 'items-end' : 'items-start'}`}
+          >
             <div
               className={`max-w-[80%] px-4 py-2 rounded-2xl ${
                 m.role === 'student' ? 'bg-ink text-mist' : 'bg-harbor/10 text-ink border border-harbor/30'
@@ -171,7 +188,7 @@ function PracticeChat({ need, onDone }) {
                   type="button"
                   onClick={() => speak(m.content, voice)}
                   disabled={isSpeaking}
-                  className="ml-2 align-middle text-ink/50 hover:text-ink disabled:opacity-40"
+                  className="ml-2 align-middle text-ink/50 hover:text-ink disabled:opacity-40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-harbor/40 rounded"
                   aria-label="Replay out loud"
                 >
                   🔊
@@ -183,20 +200,24 @@ function PracticeChat({ need, onDone }) {
             )}
           </div>
         ))}
-        {loading && <div className="text-ink/40 text-sm">The teacher is thinking…</div>}
+        {loading && (
+          <div className="animate-fadeIn">
+            <TypingDots />
+          </div>
+        )}
       </div>
 
-      {error && (
-        <div className="px-4 py-2 bg-red-100 text-red-800 rounded-lg text-sm">{error}</div>
-      )}
+      {error && <div className="alert-error">⚠️ {error}</div>}
 
       {voiceMode && (
-        <div className="flex flex-col items-center gap-2 py-2">
+        <div className="flex flex-col items-center gap-2 py-2 animate-fadeIn">
           <button
             type="button"
             onClick={isListening ? stopListening : startListening}
             disabled={loading}
-            className={`w-20 h-20 rounded-full text-3xl flex items-center justify-center transition disabled:opacity-40 ${
+            className={`w-20 h-20 rounded-full text-3xl flex items-center justify-center transition
+              disabled:opacity-40 active:scale-95 focus-visible:outline-none focus-visible:ring-2
+              focus-visible:ring-harbor/40 focus-visible:ring-offset-2 focus-visible:ring-offset-mist ${
               isListening ? 'bg-red-400 animate-pulse text-white' : 'bg-marigold text-ink'
             }`}
             aria-label={isListening ? 'Stop listening' : 'Tap to speak'}
@@ -209,7 +230,8 @@ function PracticeChat({ need, onDone }) {
           <select
             value={voice}
             onChange={(e) => setVoice(e.target.value)}
-            className="text-sm border border-ink/15 rounded-lg px-2 py-1 text-ink/70 bg-white max-w-[240px]"
+            className="text-sm border border-ink/15 rounded-lg px-2 py-1 text-ink/70 bg-white max-w-[240px]
+              focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-harbor/30"
           >
             {VOICE_OPTIONS.map((v) => (
               <option key={v.key} value={v.key}>
@@ -226,19 +248,19 @@ function PracticeChat({ need, onDone }) {
           value={input}
           onChange={(e) => setInput(e.target.value)}
           placeholder={voiceMode ? 'Or type instead…' : 'Can I get instructions written down too?'}
-          className="flex-1 px-4 py-3 rounded-lg border border-ink/15 focus:border-harbor outline-none"
+          className="input-field"
         />
-        <button
-          type="submit"
-          disabled={!input.trim() || loading}
-          className="bg-harbor text-mist px-6 py-3 rounded-lg font-medium disabled:opacity-40 disabled:cursor-not-allowed"
-        >
+        <button type="submit" disabled={!input.trim() || loading} className="btn-primary shrink-0">
           Send
         </button>
       </form>
 
-      <button type="button" onClick={onDone} className="self-start text-harbor underline underline-offset-4">
-        Done practicing for now
+      <button
+        type="button"
+        onClick={() => onDone(messages)}
+        className="btn-link self-start"
+      >
+        Done practicing — reflect on it
       </button>
     </div>
   )

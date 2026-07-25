@@ -21,6 +21,14 @@ export function postPractice(need, history, studentMessage) {
   return postJson('/api/practice', { need, history, studentMessage })
 }
 
+export function postReflect(need, whatHappened, feeling, notes) {
+  return postJson('/api/reflect', { need, whatHappened, feeling, notes })
+}
+
+export function postShare(need, formalTerm, practicedPhrase, reflections) {
+  return postJson('/api/share', { need, formalTerm, practicedPhrase, reflections })
+}
+
 // Keep these keys in sync with ELEVENLABS_VOICES in server/server.js
 export const VOICE_OPTIONS = [
   { key: 'sarah', label: 'Sarah — calm & reassuring' },

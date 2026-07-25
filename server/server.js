@@ -4,7 +4,7 @@ import { fileURLToPath } from 'url'
 import express from 'express'
 import cors from 'cors'
 import Anthropic from '@anthropic-ai/sdk'
-import { understandPrompt, practicePrompt } from './prompts.js'
+import { understandPrompt, practicePrompt, reflectPrompt, sharePrompt } from './prompts.js'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 dotenv.config({ path: path.join(__dirname, '.env') })
@@ -139,12 +139,64 @@ app.post('/api/tts', async (req, res) => {
 
 // Stage 3 — Reflect
 app.post('/api/reflect', async (req, res) => {
-  res.status(501).json({ error: 'not implemented yet' })
+  const { need, whatHappened, feeling, notes } = req.body
+  if (!need || !whatHappened || !whatHappened.trim()) {
+    return res.status(400).json({ error: 'need and whatHappened are required' })
+  }
+
+  const userMessage = [
+    `Need they were practicing: ${need}`,
+    `What happened: ${whatHappened.trim()}`,
+    feeling ? `They rated how it felt as ${feeling}/5.` : null,
+    notes && notes.trim() ? `Additional notes: ${notes.trim()}` : null
+  ].filter(Boolean).join('\n')
+
+  try {
+    const message = await anthropic.messages.create({
+      model: 'claude-sonnet-5',
+      max_tokens: 250,
+      system: reflectPrompt,
+      messages: [{ role: 'user', content: userMessage }]
+    })
+
+    const textBlock = message.content.find((block) => block.type === 'text')
+    res.json({ reflectionText: textBlock.text.trim() })
+  } catch (err) {
+    console.error('reflect error:', err)
+    res.status(500).json({ error: 'Failed to generate a reflection. Please try again.' })
+  }
 })
 
 // Stage 4 — Share
 app.post('/api/share', async (req, res) => {
-  res.status(501).json({ error: 'not implemented yet' })
+  const { need, formalTerm, practicedPhrase, reflections } = req.body
+  if (!need || !need.trim()) {
+    return res.status(400).json({ error: 'need is required' })
+  }
+
+  const userMessage = [
+    `Need: ${need}`,
+    formalTerm ? `Formal term: ${formalTerm}` : null,
+    practicedPhrase ? `Example of how they've practiced asking for it: "${practicedPhrase}"` : null,
+    Array.isArray(reflections) && reflections.length
+      ? `Past reflections on how it's gone:\n${reflections.map((r, i) => `${i + 1}. ${r}`).join('\n')}`
+      : null
+  ].filter(Boolean).join('\n\n')
+
+  try {
+    const message = await anthropic.messages.create({
+      model: 'claude-sonnet-5',
+      max_tokens: 300,
+      system: sharePrompt,
+      messages: [{ role: 'user', content: userMessage }]
+    })
+
+    const textBlock = message.content.find((block) => block.type === 'text')
+    res.json({ summaryText: textBlock.text.trim() })
+  } catch (err) {
+    console.error('share error:', err)
+    res.status(500).json({ error: 'Failed to generate your one-pager. Please try again.' })
+  }
 })
 
 app.listen(PORT, () => {

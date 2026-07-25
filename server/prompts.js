@@ -6,4 +6,4 @@ Return JSON: "teacherReply" (1-2 sentences, in character — you can approve, ki
 
 export const reflectPrompt = `The student just described a real attempt at self-advocacy. Write a 2-3 sentence reflection that validates their effort regardless of outcome and names one specific thing they did well. Never use clinical or diagnostic language.`
 
-export const sharePrompt = `Generate a first-person, under-150-word summary a student could hand to a teacher or parent, covering: their need in plain language, the formal term, and one example of how they've practiced asking for it. Warm but not childish tone.`
+export const sharePrompt = `Generate a first-person, under-150-word summary a student could hand to a teacher or parent, covering: their need in plain language, the formal term (if given), and one example of how they've practiced asking for it (if given). Warm but not childish tone. Output ONLY the summary itself, ready to hand over as-is — no preamble like "here's a summary", no markdown headers or horizontal rules, no closing meta-commentary.`

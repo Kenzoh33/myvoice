@@ -1,3 +1,47 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@layer components {
+  .btn-primary {
+    @apply bg-harbor text-mist px-6 py-3 rounded-lg font-medium transition active:scale-[0.98]
+      hover:brightness-110 disabled:opacity-40 disabled:cursor-not-allowed disabled:active:scale-100
+      focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-harbor/50 focus-visible:ring-offset-2
+      focus-visible:ring-offset-mist;
+  }
+  .btn-accent {
+    @apply bg-marigold text-ink px-6 py-3 rounded-lg font-medium transition active:scale-[0.98]
+      hover:brightness-95 disabled:opacity-40 disabled:cursor-not-allowed disabled:active:scale-100
+      focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-marigold/60 focus-visible:ring-offset-2
+      focus-visible:ring-offset-mist;
+  }
+  .btn-link {
+    @apply text-harbor underline underline-offset-4 hover:text-harbor/70 transition
+      focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-harbor/40 rounded;
+  }
+  .card {
+    @apply bg-white border border-harbor/20 rounded-2xl p-6 shadow-sm;
+  }
+  .input-field {
+    @apply w-full px-4 py-3 rounded-lg border border-ink/15 outline-none transition
+      focus:border-harbor focus-visible:ring-2 focus-visible:ring-harbor/25;
+  }
+  .alert-error {
+    @apply px-4 py-3 bg-red-100 text-red-800 rounded-lg text-sm flex items-center gap-2;
+  }
+}
+
+@media print {
+  body * {
+    visibility: hidden;
+  }
+  .print-area,
+  .print-area * {
+    visibility: visible;
+  }
+  .print-area {
+    position: absolute;
+    inset: 0;
+    padding: 2rem;
+  }
+}
