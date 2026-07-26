@@ -7,6 +7,8 @@ import PracticeChat from './components/PracticeChat.jsx'
 import ReflectJournal from './components/ReflectJournal.jsx'
 import ShareSummary from './components/ShareSummary.jsx'
 import { postUnderstand } from './lib/api.js'
+// Embedding classifier (src/lib/classifier.js) is built but not wired in yet — a Vite/onnxruntime-web
+// bundling issue needs a real browser stack trace to debug. Parked, not deleted; see conversation.
 
 function lastStudentPhrase(messages) {
   const studentMessages = messages.filter((m) => m.role === 'student')
