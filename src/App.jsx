@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import Landing from './components/Landing.jsx'
 import StageStepper from './components/StageStepper.jsx'
 import Onboarding from './components/Onboarding.jsx'
@@ -6,14 +6,10 @@ import UnderstandCard from './components/UnderstandCard.jsx'
 import PracticeChat from './components/PracticeChat.jsx'
 import ReflectJournal from './components/ReflectJournal.jsx'
 import ShareSummary from './components/ShareSummary.jsx'
-import { postUnderstand } from './lib/api.js'
-// Embedding classifier (src/lib/classifier.js) is built but not wired in yet — a Vite/onnxruntime-web
-// bundling issue needs a real browser stack trace to debug. Parked, not deleted; see conversation.
-
-function lastStudentPhrase(messages) {
-  const studentMessages = messages.filter((m) => m.role === 'student')
-  return studentMessages.length ? studentMessages[studentMessages.length - 1].content : ''
-}
+import { postUnderstand, fetchConfig } from './lib/api.js'
+// Embedding classifier (src/lib/classifier.js) is still parked on a Vite/onnxruntime-web
+// bundling issue — but its taxonomy is now live via shared/taxonomy.js, constraining the
+// server's tool-use enum. Same-need-same-bucket without the bundling problem.
 
 function App() {
   const [stage, setStage] = useState('landing') // 'landing' | 'input' | 'understand' | 'practice' | 'reflect' | 'share'
@@ -22,6 +18,11 @@ function App() {
   const [practicedPhrase, setPracticedPhrase] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
+  const [config, setConfig] = useState({ mock: false, elevenLabsAvailable: false })
+
+  useEffect(() => {
+    fetchConfig().then(setConfig)
+  }, [])
 
   const handleSubmit = async (text) => {
     setLoading(true)
@@ -56,14 +57,20 @@ function App() {
   if (stage === 'landing') {
     return (
       <div className="min-h-screen bg-mist text-ink font-sans">
-        <Landing onStart={() => setStage('input')} />
+        <main id="main">
+          <Landing onStart={() => setStage('input')} mock={config.mock} />
+        </main>
       </div>
     )
   }
 
   return (
     <div className="min-h-screen bg-mist text-ink font-sans">
-      <div className="max-w-xl mx-auto px-6 sm:px-8 pt-6 flex items-center justify-between">
+      <a href="#main" className="skip-link">
+        Skip to main content
+      </a>
+
+      <header className="max-w-xl mx-auto px-6 sm:px-8 pt-6 flex items-center justify-between">
         <button
           type="button"
           onClick={goHome}
@@ -72,17 +79,33 @@ function App() {
         >
           MyVoice
         </button>
-      </div>
+      </header>
 
-      <StageStepper stage={stage} />
+      <nav aria-label="Progress">
+        <StageStepper stage={stage} />
+      </nav>
 
-      {error && (
+      {config.mock && (
         <div className="max-w-xl mx-auto mt-4 px-6 sm:px-8">
-          <div className="alert-error">⚠️ {error}</div>
+          <div className="alert-note" role="status">
+            <span aria-hidden="true">🎭</span>
+            <span>
+              Demo mode — responses are fixtures, not live AI, and no API keys are in use.
+            </span>
+          </div>
         </div>
       )}
 
-      <div key={stage} className="animate-fadeIn">
+      {error && (
+        <div className="max-w-xl mx-auto mt-4 px-6 sm:px-8">
+          <div className="alert-error" role="alert">
+            <span aria-hidden="true">⚠️</span>
+            <span>{error}</span>
+          </div>
+        </div>
+      )}
+
+      <main id="main" key={stage} className="animate-fadeIn">
         {stage === 'input' && <Onboarding onSubmit={handleSubmit} loading={loading} />}
 
         {stage === 'understand' && (
@@ -96,26 +119,31 @@ function App() {
         {stage === 'practice' && (
           <PracticeChat
             need={needText}
-            onDone={(messages) => {
-              setPracticedPhrase(lastStudentPhrase(messages))
+            onDone={(chosenPhrase) => {
+              setPracticedPhrase(chosenPhrase || '')
               setStage('reflect')
             }}
           />
         )}
 
         {stage === 'reflect' && (
-          <ReflectJournal need={needText} onDone={() => setStage('share')} />
+          <ReflectJournal
+            need={needText}
+            categoryKey={result?.categoryKey}
+            onDone={() => setStage('share')}
+          />
         )}
 
         {stage === 'share' && (
           <ShareSummary
             need={needText}
+            categoryKey={result?.categoryKey}
             formalTerm={result?.formalTerm}
             practicedPhrase={practicedPhrase}
             onRestart={restart}
           />
         )}
-      </div>
+      </main>
     </div>
   )
 }

@@ -17,16 +17,26 @@ export function postUnderstand(needText) {
   return postJson('/api/understand', { needText })
 }
 
-export function postPractice(need, history, studentMessage) {
-  return postJson('/api/practice', { need, history, studentMessage })
+export function postPractice(need, history, studentMessage, mode) {
+  return postJson('/api/practice', { need, history, studentMessage, mode })
 }
 
-export function postReflect(need, whatHappened, feeling, notes) {
-  return postJson('/api/reflect', { need, whatHappened, feeling, notes })
+export function postReflect(need, whatHappened, feeling, notes, attemptType) {
+  return postJson('/api/reflect', { need, whatHappened, feeling, notes, attemptType })
 }
 
 export function postShare(need, formalTerm, practicedPhrase, reflections) {
   return postJson('/api/share', { need, formalTerm, practicedPhrase, reflections })
+}
+
+export async function fetchConfig() {
+  try {
+    const res = await fetch('/api/config')
+    if (!res.ok) throw new Error('config unavailable')
+    return res.json()
+  } catch {
+    return { mock: false, elevenLabsAvailable: false }
+  }
 }
 
 // Keep these keys in sync with ELEVENLABS_VOICES in server/server.js
