@@ -1,14 +1,12 @@
-function Landing({ onStart }) {
+import PrivacyNote from './PrivacyNote.jsx'
+
+function Landing({ onStart, mock }) {
   return (
     <div className="min-h-screen flex flex-col items-center justify-center px-8 py-16 text-center">
       <div className="max-w-2xl flex flex-col items-center gap-8">
         <div className="flex items-end gap-1.5" aria-hidden="true">
           {[14, 22, 32, 44].map((h, i) => (
-            <span
-              key={i}
-              className="w-2.5 rounded-full bg-marigold"
-              style={{ height: `${h}px` }}
-            />
+            <span key={i} className="w-2.5 rounded-full bg-marigold" style={{ height: `${h}px` }} />
           ))}
         </div>
 
@@ -18,10 +16,9 @@ function Landing({ onStart }) {
             <br />
             before you need it.
           </h1>
-          <p className="text-ink/70 text-lg max-w-lg mx-auto">
-            MyVoice helps students understand their own learning needs, practice asking for
-            them out loud, and track their growth — built for the student, not the adult in
-            the room.
+          <p className="text-ink/80 text-lg max-w-lg mx-auto">
+            MyVoice helps students understand their own learning needs, practice asking for them
+            out loud, and track their growth — built for the student, not the adult in the room.
           </p>
         </div>
 
@@ -30,8 +27,8 @@ function Landing({ onStart }) {
             Why this matters
           </span>
           <p className="text-ink/80 text-sm leading-relaxed">
-            IDEA requires a self-advocacy plan for every student with an IEP or 504 — almost
-            no software teaches the skill itself.
+            IDEA requires a self-advocacy plan for every student with an IEP or 504 — almost no
+            software teaches the skill itself.
           </p>
         </div>
 
@@ -45,9 +42,19 @@ function Landing({ onStart }) {
           Get started
         </button>
 
-        <p className="text-ink/40 text-sm tracking-wide">
-          Empowerment. Agency. Belonging.
-        </p>
+        {mock && (
+          <p className="alert-note max-w-md text-left" role="status">
+            <span aria-hidden="true">🎭</span>
+            <span>
+              Running in demo mode — every stage works, using fixture responses instead of live AI.
+              No API keys needed.
+            </span>
+          </p>
+        )}
+
+        <PrivacyNote variant="card" />
+
+        <p className="text-muted text-sm tracking-wide">Empowerment. Agency. Belonging.</p>
       </div>
     </div>
   )

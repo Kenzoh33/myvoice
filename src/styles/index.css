@@ -27,7 +27,29 @@
       focus:border-harbor focus-visible:ring-2 focus-visible:ring-harbor/25;
   }
   .alert-error {
-    @apply px-4 py-3 bg-red-100 text-red-800 rounded-lg text-sm flex items-center gap-2;
+    @apply px-4 py-3 bg-red-100 text-red-900 rounded-lg text-sm flex items-start gap-2;
+  }
+  .alert-note {
+    @apply px-4 py-3 bg-marigold/15 border border-marigold/40 text-ink rounded-lg text-sm
+      flex items-start gap-2;
+  }
+  /* Keyboard users must be able to reach the content without tabbing the whole header. */
+  .skip-link {
+    @apply sr-only focus:not-sr-only focus:absolute focus:z-50 focus:top-3 focus:left-3
+      focus:px-4 focus:py-2 focus:rounded-lg focus:bg-harbor focus:text-mist;
+  }
+}
+
+/* Students with vestibular disorders, migraine, or motion sensitivity are squarely in this
+   app's audience. Honour the OS-level setting instead of animating regardless. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
   }
 }
 
@@ -43,5 +65,8 @@
     position: absolute;
     inset: 0;
     padding: 2rem;
+  }
+  .no-print {
+    display: none !important;
   }
 }

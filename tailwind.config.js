@@ -8,7 +8,11 @@ export default {
         ink: '#22303A',
         harbor: '#3D6B66',
         marigold: '#E3A857',
-        sage: '#7FA07A'
+        sage: '#7FA07A',
+        // Secondary text. Replaces text-ink/40 and text-ink/50, which sat around 3:1 on
+        // mist and failed WCAG AA — in an app built for students with disabilities.
+        // This is 5.5:1 on the mist background.
+        muted: '#55636C'
       },
       fontFamily: {
         display: ['Fraunces', 'serif'],

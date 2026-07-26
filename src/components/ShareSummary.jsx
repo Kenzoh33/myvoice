@@ -1,10 +1,12 @@
 import { useState } from 'react'
 import { postShare } from '../lib/api.js'
-import { getReflectionsForNeed } from '../lib/storage.js'
+import { getReflectionsFor } from '../lib/storage.js'
+import { useSpeaker } from '../lib/speech.js'
+import SpeakButton from './SpeakButton.jsx'
 import Spinner from './Spinner.jsx'
 
-function ShareSummary({ need, formalTerm, practicedPhrase, onRestart }) {
-  const reflections = getReflectionsForNeed(need)
+function ShareSummary({ need, categoryKey, formalTerm, practicedPhrase, onRestart }) {
+  const reflections = getReflectionsFor({ categoryKey, need })
 
   const [includeFormalTerm, setIncludeFormalTerm] = useState(true)
   const [includePracticedPhrase, setIncludePracticedPhrase] = useState(!!practicedPhrase)
@@ -13,6 +15,7 @@ function ShareSummary({ need, formalTerm, practicedPhrase, onRestart }) {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
   const [copied, setCopied] = useState(false)
+  const speaker = useSpeaker()
 
   const generate = async () => {
     setLoading(true)
@@ -32,18 +35,24 @@ function ShareSummary({ need, formalTerm, practicedPhrase, onRestart }) {
     }
   }
 
+  // navigator.clipboard rejects outside secure contexts and when permission is denied.
+  // Unhandled, that used to be a silent no-op with a button that lied and said "Copied!".
   const copySummary = async () => {
     if (!summary) return
-    await navigator.clipboard.writeText(summary)
-    setCopied(true)
-    setTimeout(() => setCopied(false), 2000)
+    try {
+      await navigator.clipboard.writeText(summary)
+      setCopied(true)
+      setTimeout(() => setCopied(false), 2000)
+    } catch {
+      setError('Couldn\'t copy automatically — select the text above and copy it yourself.')
+    }
   }
 
   return (
     <div className="max-w-xl mx-auto px-6 py-10 sm:p-8 flex flex-col gap-6">
       <div>
         <h1 className="font-display text-3xl text-ink">Share your voice</h1>
-        <p className="text-ink/70 mt-1">You choose what to share, and with who.</p>
+        <p className="text-muted mt-1">You choose what to share, and with who.</p>
       </div>
 
       {!summary && (
@@ -51,7 +60,7 @@ function ShareSummary({ need, formalTerm, practicedPhrase, onRestart }) {
           <p className="text-ink/80">Pick what goes into your one-pager:</p>
 
           <div className="px-4 py-3 rounded-lg border border-ink/15 bg-ink/5">
-            <span className="text-xs uppercase tracking-wide text-ink/40">Always included</span>
+            <span className="text-xs uppercase tracking-wide text-muted">Always included</span>
             <p className="mt-1">
               Your need: <span className="font-medium">{need}</span>
             </p>
@@ -100,7 +109,12 @@ function ShareSummary({ need, formalTerm, practicedPhrase, onRestart }) {
             </label>
           )}
 
-          {error && <div className="alert-error">⚠️ {error}</div>}
+          {error && (
+            <div className="alert-error" role="alert">
+              <span aria-hidden="true">⚠️</span>
+              <span>{error}</span>
+            </div>
+          )}
 
           <button
             type="button"
@@ -117,11 +131,27 @@ function ShareSummary({ need, formalTerm, practicedPhrase, onRestart }) {
       {summary && (
         <div className="flex flex-col gap-4 animate-fadeIn">
           <div className="card print-area">
-            <span className="text-xs uppercase tracking-wide text-ink/40">My one-pager</span>
+            <div className="flex items-start justify-between gap-2">
+              <span className="text-xs uppercase tracking-wide text-muted">My one-pager</span>
+              <SpeakButton
+                id="summary"
+                text={summary}
+                speaker={speaker}
+                label="Read my one-pager out loud"
+                className="no-print"
+              />
+            </div>
             <p className="mt-3 text-ink text-lg leading-relaxed whitespace-pre-wrap">{summary}</p>
           </div>
 
-          <div className="flex flex-wrap items-center gap-4">
+          {error && (
+            <div className="alert-error" role="alert">
+              <span aria-hidden="true">⚠️</span>
+              <span>{error}</span>
+            </div>
+          )}
+
+          <div className="flex flex-wrap items-center gap-4 no-print">
             <button type="button" onClick={copySummary} className="btn-primary">
               {copied ? 'Copied!' : 'Copy to share'}
             </button>
@@ -132,10 +162,14 @@ function ShareSummary({ need, formalTerm, practicedPhrase, onRestart }) {
               Make changes
             </button>
           </div>
+
+          <p className="text-sm text-muted no-print">
+            Nothing has been sent to anyone. This only reaches a teacher when you hand it to them.
+          </p>
         </div>
       )}
 
-      <button type="button" onClick={onRestart} className="btn-link self-start">
+      <button type="button" onClick={onRestart} className="btn-link self-start no-print">
         Practice a different need
       </button>
     </div>
